@@ -35,6 +35,7 @@ public class Pong {
 	public static int debugX = 120;
 	public static TrueTypeFont debugFont;
 	public static int debugHeight;
+	public static String debugText="";
 	public static TrueTypeFont infoFont;
 	public static int infoHeight;
 	
@@ -52,9 +53,9 @@ public class Pong {
 	
 	public static int leftX = 0;
 	public static int leftY = 50;
-	
 	public static int rightX = WIDTH-30;
 	public static int rightY = 50;
+	public static String lastHit = "";
 	
 	public static int speed = 15;
 	public static int speed2 = 20;
@@ -78,8 +79,7 @@ public class Pong {
 	public static boolean closeRequested = false;
 	
 	@SuppressWarnings("deprecation")
-	public static void main (String Args[]){
-		
+	public static void initGL(){
 		try {
 			//initiate display
 			Display.setDisplayMode(new DisplayMode(WIDTH,HEIGHT));
@@ -93,17 +93,14 @@ public class Pong {
 		} catch (LWJGLException e) {
 			e.printStackTrace();
 		}
-//		GL11.glEnable(GL11.GL_TEXTURE_2D);
-
 		
-	    
-	    glMatrixMode(GL_PROJECTION);
+		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(0,WIDTH,HEIGHT,0,1,-1);
 		glMatrixMode(GL_MODELVIEW);
 		
-		
-		
+	}//initGL method
+	public static void initPanels(){
 		
 		objects = new ArrayList<Obstacle>();
 		objects.add(new Obstacle(leftX,leftY));
@@ -113,7 +110,6 @@ public class Pong {
 		objects.get(1).setWidth(30);
 		objects.get(1).setHeight(HEIGHT/3);
 		
-		int time = (int) System.currentTimeMillis();
 		
 		Font awtDebugFont = new Font("Times new Roman", Font.PLAIN,24);
 		debugFont = new TrueTypeFont(awtDebugFont,false);
@@ -122,154 +118,178 @@ public class Pong {
 		Font awtInfoFont = new Font("Times new Roman", Font.BOLD,48);
 		infoFont = new TrueTypeFont(awtInfoFont,false);
 		infoHeight = infoFont.getHeight("T");
-		
-		while (!closeRequested){//-------------------------------------------------------------------------------
-			//render
-			//https://www.opengl.org/sdk/docs/man2/
-			//^^^^good information^^^^//
-			
-			glClear(GL_COLOR_BUFFER_BIT);
-			
+	}//initPanels method
+	public static void pauseMenu(){
+		while(true){
+			if (Keyboard.isKeyDown(Keyboard.KEY_U)){
+				isPaused=false;
+				break;
+			}
 			if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)){
 				Display.destroy();
 				System.exit(0);
 			}
 			
+			GL11.glClear(GL_COLOR_BUFFER_BIT);
 			
-			int currentTime = (int)System.currentTimeMillis();
+			Draw.drawString(debugFont, "Q=Up",WIDTH/5,HEIGHT/3,Color.black);
+			Draw.drawString(debugFont, "A=Down",WIDTH/5,(HEIGHT/3)+debugHeight,Color.black);
 			
+			Draw.drawString(infoFont, "PAUSED", WIDTH/2, HEIGHT/2, Color.magenta);
+			Draw.drawString(debugFont, "(Press [u] to resume)",WIDTH/2, HEIGHT/2 + infoHeight,Color.lightGray);
 			
-			/////////////////PADDLE MOVEMENT//////////////////////////////////////////
+			Draw.drawString(debugFont, "]=Up",4*WIDTH/5,HEIGHT/3,Color.black);
+			Draw.drawString(debugFont, "'=Down",4*WIDTH/5,(HEIGHT/3)+debugHeight,Color.black);
 			
-			rOldY = rightY;//PART OF PANEL
-			lOldY = leftY;//VELOCITY!!!!
-
-			if (currentTime-time>15000) speed = speed2;
-			if (Keyboard.isKeyDown(Keyboard.KEY_Q) && leftY >= 0)leftY-=speed;	
-			if (Keyboard.isKeyDown(Keyboard.KEY_A) && leftY+objects.get(0).getHeight() <= HEIGHT)leftY+=speed;
-			if (Keyboard.isKeyDown(Keyboard.KEY_RBRACKET) && rightY >= 0)rightY-=speed;
-			if (Keyboard.isKeyDown(Keyboard.KEY_APOSTROPHE) && rightY+objects.get(1).getHeight() <= HEIGHT)rightY+=speed; 
-
-			objects.get(0).setY(leftY);
-			objects.get(1).setY(rightY);
+			Draw.drawString(infoFont, "'Pong' remake", WIDTH/2, HEIGHT/4, Color.red);
+			Draw.drawString(debugFont, "by HenryLoh", WIDTH/2, HEIGHT/4+infoHeight, Color.pink);
 			
-			//////////////////RANDOM GENERATION//////////////////////////////////////
-			int randX = randomGen.nextInt(WIDTH);
-			int randY = randomGen.nextInt(HEIGHT);
-			
-			if (randomGen.nextInt(800)==0){
-				objects.add(new Obstacle(randX,randY));
-				objects.get(objects.size()-1).setWidth(50);
-				objects.get(objects.size()-1).setHeight(50);
-			} else if (randomGen.nextInt(800)==0){
-				objects.add(new Obstacle(randX,randY));
-				objects.get(objects.size()-1).setWidth(20);
-				objects.get(objects.size()-1).setHeight(200);
-//				objects.get(objects.size()-1).setColor(0,1,1);
-			}
-			////////////////////RECTANGLE DRAWING//////////////////////////////////
-			Draw.drawImage((int)x, (int)y, 100, "GingerbreadMan");//Character
-			
-			for (int i = 0; i<objects.size();i++){
-				Draw.drawObstacle(objects.get(i));
-			}
-			//////////////////////PANEL VELOCITY////////////////////////////////////
-			rDeltaY = rOldY-rightY;
-//			print("rDeltaY="+(rOldY-rightY));
-			lDeltaY = lOldY-leftY;
-//			print("lDeltaY="+(lOldY-leftY));
-			//////////////////////VELOCITY CONTROL///////////////////////////////////
-
-//			print("U1: "+u);
-			if (Math.abs(u)>MAX_U){
-				if (u<0){
-					u=-MAX_U;
-				} else{u=MAX_U;}
-			}
-//			print("U2: "+u);
-			if (Math.abs(v)>MAX_V){
-				if (v<0){
-					v=-MAX_V;
-				} else{v=MAX_V;}
-			}
-			
-			x = x + (d*u);
-			y = y + (d*v);
-			
-			if (v<0 && !checkDirection(UP)){
-				v = -1*v;
-			} else if (v>0 && !checkDirection(DOWN)){
-				v = -1*v;
-			}
-
-			if (u>0 && !checkDirection(RIGHT)){
-				u = -1*u*h;
-				v = v + (-100*rDeltaY);
-//				print("rY = "+rDeltaY);
-			} else if (u<0 && !checkDirection(LEFT)){
-				u = -1*u*h;
-				v = v + (-200*lDeltaY);
-//				print("lY = "+lDeltaY);
-			}
-//			print("v = "+v);
-			////////////////////////PAUSE MENU////////////////////////////////////
-			
-			if (Keyboard.isKeyDown(Keyboard.KEY_P)) isPaused=true;
-			if (isPaused){
-				while(true){
-					if (Keyboard.isKeyDown(Keyboard.KEY_U)){
-						isPaused=false;
-						break;
-					}
-					GL11.glClear(GL_COLOR_BUFFER_BIT);
-					
-					Draw.drawString(debugFont, "Q=Up",WIDTH/5,HEIGHT/3,Color.black);
-					Draw.drawString(debugFont, "A=Down",WIDTH/5,(HEIGHT/3)+debugHeight,Color.black);
-					
-					Draw.drawString(infoFont, "PAUSED", WIDTH/2, HEIGHT/2, Color.magenta);
-					Draw.drawString(debugFont, "(Press [u] to resume)",WIDTH/2, HEIGHT/2 + infoHeight,Color.lightGray);
-
-					Draw.drawString(debugFont, "]=Up",4*WIDTH/5,HEIGHT/3,Color.black);
-					Draw.drawString(debugFont, "'=Down",4*WIDTH/5,(HEIGHT/3)+debugHeight,Color.black);
-					
-					Draw.drawString(infoFont, "'Pong' remake", WIDTH/2, HEIGHT/4, Color.red);
-					Draw.drawString(debugFont, "by HenryLoh", WIDTH/2, HEIGHT/4+infoHeight, Color.pink);
-					
-					Display.update();
-					Display.sync(60);
-				}
-			}
-
-			
-			///////////////////DEBUG MODE//////////////////////////////////
-			if (debugMode){
-				String debugText = "Debug Values: "
-						+"u = "+u
-						+" v = "+v
-						+" DeltaY = "+lDeltaY+" : "+rDeltaY
-						
-						;			
-
-				
-				debugFont.drawString(debugX, 0,debugText,Color.magenta);
-
-				debugX-=1;
-				if (debugX+debugFont.getWidth(debugText)<0)debugX = WIDTH+50;
-			}
-			/////////////////////////END///////////////////////////////////
-			if (x<=0){
-				end("RIGHT",(int)(currentTime-time)/1000);
-				closeRequested=true;
-			} else if (x+width>=WIDTH){
-				end("LEFT",(int)(currentTime-time)/1000);
-				closeRequested=true;
-			}else {
 			Display.update();
 			Display.sync(60);
-			}
-		}//render loop
-		Display.destroy();
+		}
+	}//pauseMenu method
+	
+	
+	public static void render(){
 		
+	int time = (int) System.currentTimeMillis();
+
+	while (!closeRequested){//-------------------------------------------------------------------------------
+		//render
+		//https://www.opengl.org/sdk/docs/man2/
+		//^^^^good information^^^^//
+		
+		glClear(GL_COLOR_BUFFER_BIT);
+		int currentTime = (int)System.currentTimeMillis();
+		
+		/////////////////PADDLE MOVEMENT//////////////////////////////////////////
+		
+		rOldY = rightY;//PART OF PANEL
+		lOldY = leftY;//VELOCITY!!!!
+		
+		if (currentTime-time>15000) speed = speed2;
+		if (Keyboard.isKeyDown(Keyboard.KEY_Q) && leftY >= 0)leftY-=speed;	
+		if (Keyboard.isKeyDown(Keyboard.KEY_A) && leftY+objects.get(0).getHeight() <= HEIGHT)leftY+=speed;
+		if (Keyboard.isKeyDown(Keyboard.KEY_RBRACKET) && rightY >= 0)rightY-=speed;
+		if (Keyboard.isKeyDown(Keyboard.KEY_APOSTROPHE) && rightY+objects.get(1).getHeight() <= HEIGHT)rightY+=speed; 
+		
+		objects.get(0).setY(leftY);
+		objects.get(1).setY(rightY);
+		
+		//////////////////RANDOM GENERATION//////////////////////////////////////
+		int randX = randomGen.nextInt(WIDTH);
+		int randY = randomGen.nextInt(HEIGHT);
+		
+		if (randomGen.nextInt(800)==0){
+			objects.add(new Obstacle(randX,randY));
+			objects.get(objects.size()-1).setWidth(50);
+			objects.get(objects.size()-1).setHeight(50);
+		} else if (randomGen.nextInt(800)==0){
+			objects.add(new Obstacle(randX,randY));
+			objects.get(objects.size()-1).setWidth(20);
+			objects.get(objects.size()-1).setHeight(200);
+//				objects.get(objects.size()-1).setColor(0,1,1);
+		}
+		if (randomGen.nextInt(2000)==0){
+			int size = objects.size();
+			for (int i = 0;i<size-2;i++){
+				objects.remove(size-1-i);
+			}
+		}
+
+		if (randomGen.nextInt(500)==0 && objects.get(0).getHeight()>150) objects.get(0).setHeight(objects.get(0).getHeight()-10);
+		if (randomGen.nextInt(500)==0 && objects.get(1).getHeight()>150) objects.get(1).setHeight(objects.get(1).getHeight()-10);
+		////////////////////RECTANGLE DRAWING//////////////////////////////////
+		Draw.drawImage((int)x, (int)y, 100, "GingerbreadMan");//Character
+		
+		for (int i = 0; i<objects.size();i++){
+			Draw.drawObstacle(objects.get(i));
+		}
+		//////////////////////PANEL VELOCITY////////////////////////////////////
+		rDeltaY = rOldY-rightY;
+//			print("rDeltaY="+(rOldY-rightY));
+		lDeltaY = lOldY-leftY;
+//			print("lDeltaY="+(lOldY-leftY));
+		//////////////////////VELOCITY CONTROL///////////////////////////////////
+		
+//			print("U1: "+u);
+		if (Math.abs(u)>MAX_U){
+			if (u<0){
+				u=-MAX_U;
+			} else{u=MAX_U;}
+		}
+//			print("U2: "+u);
+		if (Math.abs(v)>MAX_V){
+			if (v<0){
+				v=-MAX_V;
+			} else{v=MAX_V;}
+		}
+		
+		x = x + (d*u);
+		y = y + (d*v);
+		
+		
+		if (!checkDirection(UP) || !checkDirection(DOWN)){
+			v = -1*v;
+		}
+		
+		if (!checkDirection(RIGHT) || !checkDirection(LEFT)){
+			u = -1*u*h;
+		}
+		hitPanel();
+		
+		
+		
+		////////////////////////PAUSE MENU////////////////////////////////////
+		
+		if (Keyboard.isKeyDown(Keyboard.KEY_P)) isPaused=true;
+		if (isPaused){
+			pauseMenu();
+		}//isPaused
+		
+		
+		///////////////////DEBUG MODE//////////////////////////////////
+		if (debugMode){
+			if (debugText.equals("")){
+				debugText = "Debug Values: "
+					+"u = "+u
+					+" v = "+v
+					+" DeltaY = "+lDeltaY+" : "+rDeltaY
+					
+					;			
+			}
+			
+			
+			debugFont.drawString(debugX, 0,debugText,Color.magenta);
+			
+			debugX-=2;
+			if (debugX+debugFont.getWidth(debugText)<0)debugX = WIDTH+50;
+
+			if (Keyboard.isKeyDown(Keyboard.KEY_TAB)){
+				if (lastHit.equalsIgnoreCase("right")) debugText+=" R";
+				if (lastHit.equalsIgnoreCase("left")) debugText+=" L";
+			}
+			
+		}//debugMode
+		/////////////////////////END///////////////////////////////////
+		if (x<=0){
+			end("RIGHT",(int)(currentTime-time)/1000);
+			closeRequested=true;
+		} else if (x+width>=WIDTH){
+			end("LEFT",(int)(currentTime-time)/1000);
+			closeRequested=true;
+		}else {
+			Display.update();
+			Display.sync(60);
+		}
+	}//render loop
+	Display.destroy();
+	}//render method
+	public static void main (String Args[]){
+		initGL();
+		initPanels();
+		
+		render();
 		
 	}//main method
 	public static void end(String winSide,int time){
@@ -283,7 +303,7 @@ public class Pong {
 				Draw.drawString(infoFont,"Player on the "+winSide+" wins!!!",WIDTH/2,HEIGHT/2,Color.pink);
 				Display.update();
 				Thread.sleep(1500);
-				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 				Draw.drawString(infoFont,"The game took roughly "+time+" seconds.",WIDTH/2,HEIGHT/2,Color.darkGray);
 				Display.update();
 				Thread.sleep(1500);
@@ -293,6 +313,43 @@ public class Pong {
 		
 		
 	}//end method
+	public static void hitPanel(){
+		if(u>0){//check right panel
+			
+			int locX = objects.get(1).getX();
+			int locY = objects.get(1).getY();
+			int objWidth = objects.get(1).getWidth();
+			int objHeight = objects.get(1).getHeight();
+			int halfWidth = objWidth/2;
+			int halfHeight = objHeight/2;
+			int centerX = locX+(objWidth/2);
+			int centerY = locY+(objHeight/2);
+			
+			if (isBetween((int)y,centerY,halfHeight) || isBetween((int)y+height,centerY,halfHeight) || isBetween(locY,((int)y+height/2),height/2) || isBetween(locY+objHeight,((int)y+height/2),height/2)){
+				if (isBetween((int)x+width,locX+objWidth,objWidth+10)){
+					lastHit = "right";
+					v = v + (-200*rDeltaY);
+//					print("RIGHT");
+				}
+			}
+		} else {//check left panel
+			int locX = objects.get(0).getX();
+			int locY = objects.get(0).getY();
+			int objWidth = objects.get(0).getWidth();
+			int objHeight = objects.get(0).getHeight();
+			int halfWidth = objWidth/2;
+			int halfHeight = objHeight/2;
+			int centerX = locX+(objWidth/2);
+			int centerY = locY+(objHeight/2);
+
+			if (isBetween((int)y,centerY,halfHeight) || isBetween((int)y+height,centerY,halfHeight) || isBetween(locY,(int)(y+height/2),height/2) || isBetween(locY+objHeight,((int)y+height/2),height/2)){
+				if (isBetween((int)x,locX,objWidth+10)){
+					lastHit = "left";
+					v = v + (-200*lDeltaY);
+				}
+			}
+		}
+	}//hitPanel method
 	public static boolean checkDirection(int direction){
 		boolean areaIsOpen = true;
 		

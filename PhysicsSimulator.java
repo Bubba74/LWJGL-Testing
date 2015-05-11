@@ -30,12 +30,11 @@ public class PhysicsSimulator {
 	public static int height = 100;
 	
 	
-	public static double u=12000; //(+) = right
-	public static double v=12000;//(-) = up
+	public static double u=24000; //(+) = right
+	public static double v=30000;//(-) = up
 	public static double d=0.001;
 	public static double g=10000;
 	public static double h=0.7;
-	
 	
 	
 	public static Obstacle objects[];
