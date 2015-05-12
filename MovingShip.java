@@ -68,6 +68,7 @@ public class MovingShip {
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
 			for (FighterShip ship:ships){
+				GL11.glColor3f(1, 0, 0);
 				GL11.glPushMatrix();
 					GL11.glDisable(GL_BLEND);
 					GL11.glLoadIdentity();
@@ -82,13 +83,19 @@ public class MovingShip {
 					}
 					
 				GL11.glPopMatrix();
-			
-			
+
+				
+				
 			if (ship.getRotateAngle()>=180){
 				ship.setRotateAngle(-179.99f);
 			}else if (ship.getRotateAngle()<=-180)ship.setRotateAngle(179.99f);
 			
 			}//for loop through ships array
+
+			GL11.glEnable(GL_BLEND);
+			for (int i=0;i<ships.size();i++){
+				Draw.drawString(font, ""+ships.get(i).getHealth(), (int)ships.get(i).getX(), (int)ships.get(i).getY(), Color.green);
+			}
 			
 			switch(playerNum){
 			case 1:
@@ -145,10 +152,18 @@ public class MovingShip {
 					){
 					removeProj = p;
 				} else {
-				drawProj(p);
-				removeProj = null;
-				}
-			}
+					drawProj(p);
+						removeProj = null;
+
+					for (FighterShip ship:ships){
+						if (isNear(p,ship)){
+							projs.remove(p);
+							ship.addToHealth(-1);
+						}
+					
+					}//for loop of ships
+				
+				}//else statement
 			if (removeProj!=null){
 				projs.remove(removeProj);
 				removeProj = null;
@@ -164,8 +179,9 @@ public class MovingShip {
 			
 			
 			Display.update();
-			Display.sync(30);
+			Display.sync(60);
 		}
+	} //render method
 	}//render method
 	public void shoot(int shipNum){
 		int speed = 12;
@@ -322,6 +338,21 @@ public class MovingShip {
 		
 	}//drawBox method
 
+	
+	public boolean isNear(Projectile p, FighterShip ship){
+		float pX = p.getX();
+		float pY = p.getY();
+		float sX = ship.getX();
+		float sY = ship.getY();
+		
+		if (Math.abs(sX-pX)<20 && Math.abs(sY-pY)<20){
+			return true;
+		} else {
+			return false;
+		}
+		
+		
+	}//isNear method
 	public double valueX(float angle){
 		float angleX = angle;
 		double percent;
