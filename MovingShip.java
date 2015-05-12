@@ -34,7 +34,14 @@ public class MovingShip {
 	public float g = 0f;
 	public float b = 0f;
 	
+	public String displayText = "";
+	
 	public List<Projectile> projs = new ArrayList<Projectile>();
+	public int projNum = 0;
+	public List<FighterShip> ships = new ArrayList<FighterShip>();
+	public int playerNum = 2;
+	
+	public boolean autoFire = false;
 	
 	public TrueTypeFont font;
 	
@@ -51,145 +58,195 @@ public class MovingShip {
 		
 	}//start method
 	public void render(){
-		
+
+		for (int i=0;i<playerNum;i++){
+			ships.add(new FighterShip());
+		}
 		
 		while(!Display.isCloseRequested() && !Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)){
 			
-//			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			
-			
-			GL11.glPushMatrix();
-			GL11.glDisable(GL_BLEND);
-			GL11.glLoadIdentity();
+			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
-			GL11.glTranslatef((float)x, (float)y, 0);
-			GL11.glRotatef(rotateAngle, 0.0f, 0.0f, 1.0f);
-				drawShip();
-			GL11.glPopMatrix();
+			for (FighterShip ship:ships){
+				GL11.glPushMatrix();
+					GL11.glDisable(GL_BLEND);
+					GL11.glLoadIdentity();
 			
-			Draw.drawString(font, "RotateAngle: "+rotateAngle, WIDTH/2, HEIGHT/2, Color.magenta);
-			
-//			drawSettings();
-			
-			
-			if (rotateAngle>=180){
-				rotateAngle=-179.99f;
-			}else if (rotateAngle<=-180)rotateAngle=179.99f;
-			
-			if (Keyboard.isKeyDown(Keyboard.KEY_UP))drive(12);
-			if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))drive(-8);
-			if (Keyboard.isKeyDown(Keyboard.KEY_LEFT))rotateAngle-=2;
-			if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT))rotateAngle+=2;
-			
-			while (Keyboard.next()) {
-				if (!Keyboard.getEventKeyState()) {
-					if (Keyboard.getEventKey() == Keyboard.KEY_SPACE) {
-						shoot();
+					GL11.glTranslatef(ship.getX(), ship.getY(), 0);
+					GL11.glRotatef(ship.getRotateAngle(), 0.0f, 0.0f, 1.0f);
+					
+					if (ships.indexOf(ship)==0){
+					drawShip(1,1,0);
+					} else {
+						drawShip(1,0,1);
 					}
-				}   
+					
+				GL11.glPopMatrix();
+			
+			
+			if (ship.getRotateAngle()>=180){
+				ship.setRotateAngle(-179.99f);
+			}else if (ship.getRotateAngle()<=-180)ship.setRotateAngle(179.99f);
+			
+			}//for loop through ships array
+			
+			switch(playerNum){
+			case 1:
+				if (Keyboard.isKeyDown(Keyboard.KEY_UP))drive(12,0);
+				if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))drive(-8,0);
+				if (Keyboard.isKeyDown(Keyboard.KEY_LEFT))ships.get(0).addToRA(-2);
+				if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT))ships.get(0).addToRA(2);
+				if (Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) && autoFire) shoot(0);
+				
+				break;
+			case 2:
+				if (Keyboard.isKeyDown(Keyboard.KEY_UP))drive(12,0);
+				if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))drive(-8,0);
+				if (Keyboard.isKeyDown(Keyboard.KEY_LEFT))ships.get(0).addToRA(-2);
+				if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT))ships.get(0).addToRA(2);
+				if (Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) && autoFire) shoot(0);
+				
+				////^^^^^PLAYER 1^^^^^^^/////vvvvvPlayer 2vvvvvv//////
+				if (Keyboard.isKeyDown(Keyboard.KEY_W))drive(12,1);
+				if (Keyboard.isKeyDown(Keyboard.KEY_S))drive(-8,1);
+				if (Keyboard.isKeyDown(Keyboard.KEY_A))ships.get(1).addToRA(-2);
+				if (Keyboard.isKeyDown(Keyboard.KEY_D))ships.get(1).addToRA(2);
+				if (Keyboard.isKeyDown(Keyboard.KEY_F) && autoFire) shoot(1);
+				
+				break;
+			default:
+				System.exit(0);
+				break;
 			}
+			
+			while(Keyboard.next()){
+				if (!autoFire){
+					if (Keyboard.getEventKeyState()) {
+						if (playerNum>0){ 
+							if (Keyboard.getEventKey() == Keyboard.KEY_RCONTROL)shoot(0);
+						}
+						if (playerNum>1){
+							if (Keyboard.getEventKey() == Keyboard.KEY_F)shoot(1);
+						}	
+					}
+				}
+			}//while loop
 			
 			if (Keyboard.isKeyDown(Keyboard.KEY_C)) GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			if (Keyboard.isKeyDown(Keyboard.KEY_R)){
-				x = 500;
-				y = 400;
-			}
-			if (Mouse.isButtonDown(0) && HEIGHT-Mouse.getY()>120) drawLine();
+//			if (Mouse.isButtonDown(0) && HEIGHT-Mouse.getY()>120) drawLine();
 			
-			int size = projs.size();
+			Projectile removeProj = null;
+			
 			for(Projectile p:projs){
-				
-				p.setX((float)(p.getX()+p.getDeltaX()*p.getSpeed()));
-				p.setY((float)(p.getY()+p.getDeltaY()*p.getSpeed()));
-				
-				GL11.glPushMatrix();
-				GL11.glDisable(GL_BLEND);
-				GL11.glLoadIdentity();
-				
-				GL11.glColor3f(1, 1, 0);
-				GL11.glTranslated(p.getX(), p.getY(), 0);
-					
-				GL11.glBegin(GL11.GL_POLYGON);
-					GL11.glVertex2f(-10, 0);
-					GL11.glVertex2f(-5, 5);
-					GL11.glVertex2f(0, 10);
-					GL11.glVertex2f(5, 5);
-					GL11.glColor3f(0, 0, 0);
-				
-					GL11.glVertex2f(10, 0);
-					GL11.glVertex2f(5, -5);
-					GL11.glVertex2f(0, -10);
-					GL11.glVertex2f(-5, -5);
-				GL11.glEnd();
-				
-				GL11.glPopMatrix();
-				
+				if (p.getX()<0 || 
+					p.getX()>WIDTH ||
+					p.getY()<0 ||
+					p.getY()>HEIGHT
+					){
+					removeProj = p;
+				} else {
+				drawProj(p);
+				removeProj = null;
+				}
 			}
+			if (removeProj!=null){
+				projs.remove(removeProj);
+				removeProj = null;
+			}
+			
+			
+//			displayText = 
+//					"RotateAngle: " + rotateAngle +
+//					"ProjNum: " + projs.size() +
+//					"" +
+//					"";
+//			Draw.drawString(font, displayText, WIDTH/2, HEIGHT/2, Color.magenta);
+			
 			
 			Display.update();
-			Display.sync(50);
+			Display.sync(30);
 		}
 	}//render method
-	public void shoot(){
-		int speed = 4;
+	public void shoot(int shipNum){
+		int speed = 12;
 		
-		double ratioX = valueX(rotateAngle,1);
-		double ratioY = valueY(rotateAngle,1);
+		double ratioX = valueX(ships.get(shipNum).getRotateAngle());
+		double ratioY = valueY(ships.get(shipNum).getRotateAngle());
 		double evenX =ratioX/Math.hypot(ratioX,ratioY);
 		double evenY = ratioY/Math.hypot(ratioX, ratioY);
 		
-		projs.add(new Projectile(x,y,evenX,evenY,speed));
-		
-		
-		
-		
-		
+		projs.add(new Projectile(ships.get(shipNum).getX(),ships.get(shipNum).getY(),evenX,evenY,speed,projNum));
+//		projs.add(new Projectile(x,y,evenX,evenY,speed,projNum));
+		projNum++;
 		
 	}//shoot method
-	public void drive(int mag){
-		
-		double percentX = valueX(rotateAngle,1);
-		double percentY = valueY(rotateAngle,1);
-		double evenX =percentX/Math.hypot(percentX,percentY);
+	public void drive(int mag,int shipNum){
+		double percentX = valueX(ships.get(shipNum).getRotateAngle());
+		double percentY = valueY(ships.get(shipNum).getRotateAngle());
+		double evenX = percentX/Math.hypot(percentX,percentY);
 		double evenY = percentY/Math.hypot(percentX, percentY);
-		x+=evenX*mag;
-		y+=evenY*mag;
+		ships.get(shipNum).addToX((float)evenX*mag);
+		ships.get(shipNum).addToY((float)evenY*mag);
+		
+//		System.out.println("EvenX: "+evenX + " EvenY: "+evenY);
 		
 	}//drive method
 	
-	public void drawShip(){
+	public void drawProj(Projectile p){
+		p.setX((float)(p.getX()+p.getDeltaX()*p.getSpeed()));
+		p.setY((float)(p.getY()+p.getDeltaY()*p.getSpeed()));
+		
+		GL11.glPushMatrix();
+		GL11.glDisable(GL_BLEND);
+		GL11.glLoadIdentity();
+		
+		GL11.glColor3f(1, 1, 0);
+		GL11.glTranslated(p.getX(), p.getY(), 0);
+			
+		GL11.glBegin(GL11.GL_POLYGON);
+			GL11.glVertex2f(-10, 0);
+			GL11.glVertex2f(-5, 5);
+			GL11.glVertex2f(0, 10);
+			GL11.glVertex2f(5, 5);
+			GL11.glColor3f(0, 0, 0);
+		
+			GL11.glVertex2f(10, 0);
+			GL11.glVertex2f(5, -5);
+			GL11.glVertex2f(0, -10);
+			GL11.glVertex2f(-5, -5);
+		GL11.glEnd();
+		
+		GL11.glPopMatrix();
+		
+	}//drawProj method
+	public void drawShip(float r, float g, float b){
+		
+		GL11.glColor3f(r, g, b);
+		
 		GL11.glBegin(GL11.GL_TRIANGLES);
+			GL11.glVertex2f(-50,0);
+			GL11.glVertex2f(0,50);//Top-left
+			GL11.glVertex2f(0,0);
+			
+			GL11.glVertex2f(50,0);
+			GL11.glVertex2f(0,50);//Top-right
+			GL11.glVertex2f(0,0);
+			
+			GL11.glVertex2f(50,0);
+			GL11.glVertex2f(0,-50);//Bottom-right
+			GL11.glVertex2f(0,0);
+			
+			GL11.glVertex2f(-50,0);
+			GL11.glVertex2f(0,-50);//Bottom-left
+			GL11.glVertex2f(0,0);
+			
+			GL11.glVertex2f(0, 50);
+			GL11.glVertex2f(80, 0);//Top-nose
+			GL11.glVertex2f(60, 0);
 		
-		GL11.glColor3f(0, 0, 1);
-		
-		GL11.glVertex2f(-50,0);
-		GL11.glVertex2f(0,50);//Top-left
-		GL11.glVertex2f(0,0);
-		
-		
-		GL11.glColor3f(1, 0, 0);
-		
-		GL11.glVertex2f(50,0);
-		GL11.glVertex2f(0,50);//Top-right
-		GL11.glVertex2f(0,0);
-		
-		GL11.glVertex2f(50,0);
-		GL11.glVertex2f(0,-50);//Bottom-right
-		GL11.glVertex2f(0,0);
-		
-		GL11.glColor3f(0, 0, 1);
-		
-		GL11.glVertex2f(-50,0);
-		GL11.glVertex2f(0,-50);//Bottom-left
-		GL11.glVertex2f(0,0);
-		
-		GL11.glVertex2f(0, 50);
-		GL11.glVertex2f(80, 0);//Top-nose
-		GL11.glVertex2f(60, 0);
-		
-		GL11.glVertex2f(0, -50);
-		GL11.glVertex2f(80, 0);//Bottom-nose
-		GL11.glVertex2f(60, 0);
+			GL11.glVertex2f(0, -50);
+			GL11.glVertex2f(80, 0);//Bottom-nose
+			GL11.glVertex2f(60, 0);
 		
 		GL11.glEnd();
 
@@ -265,9 +322,10 @@ public class MovingShip {
 		
 	}//drawBox method
 
-	public double valueX(float angle,int mag){
+	public double valueX(float angle){
 		float angleX = angle;
 		double percent;
+		int mag = 1;
 		
 		if (angleX<0)angleX*=-1;
 		if (angleX>90){
@@ -279,8 +337,8 @@ public class MovingShip {
 		return percent*mag;
 		
 	}//valueX method
-	public double valueY(float angle, int mag){
-		float angleY = rotateAngle;
+	public double valueY(float angle){
+		float angleY = angle;
 		if (angleY<-90){
 			angleY = angleY + (2*(-90-angleY));
 		}	
@@ -289,8 +347,7 @@ public class MovingShip {
 		}
 		double percent = angleY/90;
 		
-		
-		return percent*mag;
+		return percent;
 	}//valueY method
 	public void initGL(){
 		try{

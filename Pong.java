@@ -188,7 +188,7 @@ public class Pong {
 			objects.add(new Obstacle(randX,randY));
 			objects.get(objects.size()-1).setWidth(20);
 			objects.get(objects.size()-1).setHeight(200);
-//				objects.get(objects.size()-1).setColor(0,1,1);
+			objects.get(objects.size()-1).setColor(0,1,1);
 		}
 		if (randomGen.nextInt(2000)==0){
 			int size = objects.size();
