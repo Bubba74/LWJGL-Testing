@@ -6,15 +6,15 @@ public class Projectile {
 	private double deltaX;
 	private double deltaY;
 	private int speed = 5;
-	private int projNum;
+	private int shipNum;
 	
-	public Projectile(float x, float y, double deltaX, double deltaY, int speed,int projNum){
+	public Projectile(float x, float y, double deltaX, double deltaY, int speed,int shipNum){
 		this.x = x;
 		this.y = y;
 		this.deltaX = deltaX;
 		this.deltaY = deltaY;
 		this.speed = speed;
-		this.projNum = projNum;
+		this.shipNum = shipNum;
 	}
 	
 	public void setX(float x){
@@ -47,8 +47,8 @@ public class Projectile {
 	public int getSpeed(){
 		return speed;
 	}
-	public int getProjNum(){
-		return this.projNum;
+	public int getShipNum(){
+		return this.shipNum;
 	}
 	
 }

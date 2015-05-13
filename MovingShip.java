@@ -26,6 +26,12 @@ public class MovingShip {
 	public Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 	public int WIDTH = (int)d.getWidth();
 	public int HEIGHT = (int)d.getHeight();
+	public boolean isPaused = true;
+	
+	public enum State {
+		MAIN_MENU, CONTROLS, GAME, END_GAME;
+	}
+	public State state = State.MAIN_MENU;
 	
 	public float r = 1f;
 	public float g = 0f;
@@ -37,32 +43,102 @@ public class MovingShip {
 	public int projNum = 0;
 	public List<FighterShip> ships = new ArrayList<FighterShip>();
 	public int playerNum = 2;
+	public FighterShip winningShip;
 	
 	public boolean autoFire = false;
 	
 	public TrueTypeFont font;
-	
+	public int fontHeight;
+	public TrueTypeFont titleFont;
+	public int titleFontHeight;
 	
 	
 	public void start(){
 		initGL();
+		
 		Font awtFont = new Font("Times new Roman",Font.BOLD,36);
 		font = new TrueTypeFont(awtFont,false);
+		fontHeight = font.getHeight("T");
 		
+		Font awtFont2 = new Font("Times new Roman",Font.BOLD,48);
+		titleFont = new TrueTypeFont(awtFont2,false);
+		titleFontHeight = titleFont.getHeight("T");
 		
-		
-		render();
-		
-	}//start method
-	public void render(){
-
 		for (int i=0;i<playerNum;i++){
 			ships.add(new FighterShip());
 		}
 		
+		heal();
+		
 		while(!Display.isCloseRequested() && !Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)){
 			
+			checkInput();
+			
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+			render();
+			
+			Display.update();
+			Display.sync(60);
+		}//while loop
+		Display.destroy();
+	}//start method
+	public void checkInput(){
+		switch(state){
+		
+		case MAIN_MENU:
+			if (Keyboard.isKeyDown(Keyboard.KEY_C))state = State.CONTROLS;
+			if (Keyboard.isKeyDown(Keyboard.KEY_RETURN))state = State.GAME;
+//			System.out.println("Checking... "+state);
+			break;
+		case CONTROLS:
+			if (Keyboard.isKeyDown(Keyboard.KEY_M))state = State.MAIN_MENU;
+//			System.out.println("Checking... "+state);
+			break;
+		case GAME:
+			if (Keyboard.isKeyDown(Keyboard.KEY_M))state = State.MAIN_MENU;
+//			System.out.println("Checking... "+state);
+			break;
+		case END_GAME:
+			if (Keyboard.isKeyDown(Keyboard.KEY_R))state = State.MAIN_MENU;
+//			System.out.println("Checking... "+state);
+		}
+//		System.out.println("Switch");
+
+	}//checkInput method
+	public void render(){
+		switch(state){
+			case MAIN_MENU:
+//				System.out.println(""+state);
+				mainMenu();
+				break;
+			case CONTROLS:
+//				System.out.println(""+state);
+				controls();
+				break;
+			case GAME:
+				game();
+//				System.out.println(""+state);
+				break;
+			case END_GAME:
+				endGame();
+//				System.out.println(""+state);
+				break;
+		}
+		
+	}//render method
+	
+	public void mainMenu(){
+		Draw.drawString(titleFont, "BATTLE", WIDTH/2, HEIGHT/3, Color.magenta);
+		Draw.drawString(font, "by Henry Loh", WIDTH/2, HEIGHT/3 +10+ titleFontHeight, Color.magenta);
+		Draw.drawString(font, "Press: ", WIDTH/2, HEIGHT/2, Color.blue);
+		Draw.drawString(font, "[c] for controls", WIDTH/2, HEIGHT/2+fontHeight, Color.gray);
+		Draw.drawString(font, "enter to continue", WIDTH/2, HEIGHT/2+2*(fontHeight), Color.gray);
+	}//mainMenu method
+	public void controls(){
+		Draw.drawString(font, "Press [m] to return to main menu", WIDTH/2, HEIGHT/3+fontHeight, Color.gray);
+	}//controls method
+	
+	public void game(){
 
 			GL11.glDisable(GL_BLEND);
 			for (FighterShip ship:ships){
@@ -147,37 +223,61 @@ public class MovingShip {
 					){
 					removeProj = p;
 				} else {
-					drawProj(p);
-					removeProj = null;
-//					
-//					for (FighterShip ship:ships){
-//						if (isNear(p,ship)){
-//							projs.remove(p);
-//							ship.addToHealth(-1);
-//						}
-//					
-//					}//for loop of ships
-//				
+					
+					
+					for (FighterShip ship:ships){
+						
+						if (p.getShipNum() != ships.indexOf(ship)&&
+								Math.abs(ship.getX()-p.getX())<40 &&
+								Math.abs(ship.getY()-p.getY())<40
+							){
+							removeProj = p;
+							if (ship.getHealth()==1){
+								winningShip = ship;
+								state = State.END_GAME;
+							} else{
+							ship.addToHealth(-1);
+							}
+						}
+					
+					}//for loop of ships
+					
+					if (removeProj == null)drawProj(p);
+				
 				}//else statement
 			}//for loop of projectiles
+			
 			if (removeProj!=null){
 				projs.remove(removeProj);
 				removeProj = null;
 			}
-//			
-//			
+			
+			
 //			displayText = 
 //					"RotateAngle: " + rotateAngle +
 //					"ProjNum: " + projs.size() +
 //					"" +
 //					"";
 //			Draw.drawString(font, displayText, WIDTH/2, HEIGHT/2, Color.magenta);
-			
-			
-			Display.update();
-			Display.sync(60);
+	} //game method
+	public void endGame(){
+		String winningSide = (ships.indexOf(winningShip)==0 ? "LEFT":"RIGHT");
+		String winner = "Player on the "+winningSide+" wins!!!";
+		Draw.drawString(titleFont, winner, WIDTH/2, HEIGHT/3, Color.red);
+		Draw.drawString(font, "Press [r] to play again", WIDTH/2, HEIGHT/2, Color.darkGray);
+		heal();
+	}//endGame method
+	public void heal(){
+		for (FighterShip ship:ships){
+			ship.setHealth(ship.MAXHEALTH);
+			ship.setX(WIDTH-(500+(920*ships.indexOf(ship))));
+			ship.setRotateAngle(-90);
+			ship.setY(400);
 		}
-	} //render method
+		projs.clear();
+	}//heal method
+	
+	
 	public void shoot(int shipNum){
 		int speed = 12;
 		
@@ -186,9 +286,8 @@ public class MovingShip {
 		float evenX =(float) (ratioX/Math.hypot(ratioX,ratioY));
 		float evenY = (float) (ratioY/Math.hypot(ratioX, ratioY));
 		
-		projs.add(new Projectile(ships.get(shipNum).getX(),ships.get(shipNum).getY(),evenX,evenY,speed,projNum));
-//		projs.add(new Projectile(x,y,evenX,evenY,speed,projNum));
-		projNum++;
+		projs.add(new Projectile(ships.get(shipNum).getX(),ships.get(shipNum).getY(),evenX,evenY,speed,shipNum));
+//		projs.add(new Projectile(x,y,evenX,evenY,speed,ships.));
 		
 	}//shoot method
 	public void drive(int mag,int shipNum){
@@ -333,21 +432,6 @@ public class MovingShip {
 		
 	}//drawBox method
 
-	
-	public boolean isNear(Projectile p, FighterShip ship){
-		float pX = p.getX();
-		float pY = p.getY();
-		float sX = ship.getX();
-		float sY = ship.getY();
-		
-		if (Math.abs(sX-pX)<20 && Math.abs(sY-pY)<20){
-			return true;
-		} else {
-			return false;
-		}
-		
-		
-	}//isNear method
 	public float valueX(float angle){
 		float angleX = angle;
 		float percent;

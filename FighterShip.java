@@ -1,9 +1,11 @@
 
 public class FighterShip {
+	public final int MAXHEALTH = 15;
+	
 	private float x = 500;
 	private float y = 400;
 	private float rotateAngle = 0.01f;
-	private int health = 5;
+	private int health = MAXHEALTH;
 	
 	public void setX(float x){this.x = x;}
 	public void addToX(float x){this.x += x;}
