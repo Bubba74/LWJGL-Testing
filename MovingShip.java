@@ -26,9 +26,6 @@ public class MovingShip {
 	public Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 	public int WIDTH = (int)d.getWidth();
 	public int HEIGHT = (int)d.getHeight();
-	public int x = 500;
-	public int y = 400;
-	public float rotateAngle = 0.01f;
 	
 	public float r = 1f;
 	public float g = 0f;
@@ -65,14 +62,14 @@ public class MovingShip {
 		
 		while(!Display.isCloseRequested() && !Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)){
 			
-			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
+			GL11.glDisable(GL_BLEND);
 			for (FighterShip ship:ships){
 				GL11.glColor3f(1, 0, 0);
+				
 				GL11.glPushMatrix();
-					GL11.glDisable(GL_BLEND);
 					GL11.glLoadIdentity();
-			
 					GL11.glTranslatef(ship.getX(), ship.getY(), 0);
 					GL11.glRotatef(ship.getRotateAngle(), 0.0f, 0.0f, 1.0f);
 					
@@ -83,8 +80,6 @@ public class MovingShip {
 					}
 					
 				GL11.glPopMatrix();
-
-				
 				
 			if (ship.getRotateAngle()>=180){
 				ship.setRotateAngle(-179.99f);
@@ -140,7 +135,7 @@ public class MovingShip {
 			}//while loop
 			
 			if (Keyboard.isKeyDown(Keyboard.KEY_C)) GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-//			if (Mouse.isButtonDown(0) && HEIGHT-Mouse.getY()>120) drawLine();
+			if (Mouse.isButtonDown(0) && HEIGHT-Mouse.getY()>120) drawLine();
 			
 			Projectile removeProj = null;
 			
@@ -153,23 +148,24 @@ public class MovingShip {
 					removeProj = p;
 				} else {
 					drawProj(p);
-						removeProj = null;
-
-					for (FighterShip ship:ships){
-						if (isNear(p,ship)){
-							projs.remove(p);
-							ship.addToHealth(-1);
-						}
-					
-					}//for loop of ships
-				
+					removeProj = null;
+//					
+//					for (FighterShip ship:ships){
+//						if (isNear(p,ship)){
+//							projs.remove(p);
+//							ship.addToHealth(-1);
+//						}
+//					
+//					}//for loop of ships
+//				
 				}//else statement
+			}//for loop of projectiles
 			if (removeProj!=null){
 				projs.remove(removeProj);
 				removeProj = null;
 			}
-			
-			
+//			
+//			
 //			displayText = 
 //					"RotateAngle: " + rotateAngle +
 //					"ProjNum: " + projs.size() +
@@ -182,14 +178,13 @@ public class MovingShip {
 			Display.sync(60);
 		}
 	} //render method
-	}//render method
 	public void shoot(int shipNum){
 		int speed = 12;
 		
-		double ratioX = valueX(ships.get(shipNum).getRotateAngle());
-		double ratioY = valueY(ships.get(shipNum).getRotateAngle());
-		double evenX =ratioX/Math.hypot(ratioX,ratioY);
-		double evenY = ratioY/Math.hypot(ratioX, ratioY);
+		float ratioX = valueX(ships.get(shipNum).getRotateAngle());
+		float ratioY = valueY(ships.get(shipNum).getRotateAngle());
+		float evenX =(float) (ratioX/Math.hypot(ratioX,ratioY));
+		float evenY = (float) (ratioY/Math.hypot(ratioX, ratioY));
 		
 		projs.add(new Projectile(ships.get(shipNum).getX(),ships.get(shipNum).getY(),evenX,evenY,speed,projNum));
 //		projs.add(new Projectile(x,y,evenX,evenY,speed,projNum));
@@ -197,12 +192,12 @@ public class MovingShip {
 		
 	}//shoot method
 	public void drive(int mag,int shipNum){
-		double percentX = valueX(ships.get(shipNum).getRotateAngle());
-		double percentY = valueY(ships.get(shipNum).getRotateAngle());
-		double evenX = percentX/Math.hypot(percentX,percentY);
-		double evenY = percentY/Math.hypot(percentX, percentY);
-		ships.get(shipNum).addToX((float)evenX*mag);
-		ships.get(shipNum).addToY((float)evenY*mag);
+		float percentX = valueX(ships.get(shipNum).getRotateAngle());
+		float percentY = valueY(ships.get(shipNum).getRotateAngle());
+		float evenX = (float) (percentX/Math.hypot(percentX,percentY));
+		float evenY = (float) (percentY/Math.hypot(percentX, percentY));
+		ships.get(shipNum).addToX(evenX*mag);
+		ships.get(shipNum).addToY(evenY*mag);
 		
 //		System.out.println("EvenX: "+evenX + " EvenY: "+evenY);
 		
@@ -353,9 +348,9 @@ public class MovingShip {
 		
 		
 	}//isNear method
-	public double valueX(float angle){
+	public float valueX(float angle){
 		float angleX = angle;
-		double percent;
+		float percent;
 		int mag = 1;
 		
 		if (angleX<0)angleX*=-1;
@@ -368,7 +363,7 @@ public class MovingShip {
 		return percent*mag;
 		
 	}//valueX method
-	public double valueY(float angle){
+	public float valueY(float angle){
 		float angleY = angle;
 		if (angleY<-90){
 			angleY = angleY + (2*(-90-angleY));
@@ -376,7 +371,7 @@ public class MovingShip {
 		if (angleY>90){
 			angleY = angleY - (2*(angleY-90));
 		}
-		double percent = angleY/90;
+		float percent = angleY/90;
 		
 		return percent;
 	}//valueY method
