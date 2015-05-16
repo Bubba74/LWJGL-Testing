@@ -7,8 +7,10 @@ import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
 
 import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+import org.lwjgl.opengl.GL11;
 
 
 public class Main {
@@ -39,7 +41,7 @@ public class Main {
 			//NOTE: THIS DOES NOT MAINTAIN THE DISPLAY
 			//Use Display.update() in a while loop to
 			//continue displaying the window.
-			
+
 			///////^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^/////////////
 		} catch (LWJGLException e) {
 			e.printStackTrace();
@@ -50,12 +52,17 @@ public class Main {
 		glOrtho(0,800,500,0,1,-1);
 		glMatrixMode(GL_MODELVIEW);
 		
+		
+		
 		while (!Display.isCloseRequested()){
 			/////ALL DISPLAY FUNCTIONS GO HERE///////////////
+			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 //			Draw.drawCircle(200, 200, 50);
-			Draw.drawImage(200, 200, 200, "GingerbreadMan");
+//			Draw.drawImage(200, 200, 200, "GingerbreadMan");
 			
 			/////^^^^^^^^^^^^^^^^^^^^^^^^^^^^^///////////////
+			
+			
 			
 			Display.update();
 			//Updates the display

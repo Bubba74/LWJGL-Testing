@@ -1,6 +1,11 @@
 
 public class Projectile {
 	
+	public enum projType{
+		BULLET, BOMB;
+	}
+	
+	
 	private float x;
 	private float y;
 	private double deltaX;
