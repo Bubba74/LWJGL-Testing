@@ -95,7 +95,12 @@ public class Game_2Player {
 			
 			if (!menu1.isBusy() && !menu2.isBusy()){
 				if (Keyboard.isKeyDown(Keyboard.KEY_C))state = State.CONTROLS;
-				if (Keyboard.isKeyDown(Keyboard.KEY_SPACE))state = State.GAME;
+				if (Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
+					playerNames[0] = menu1.getCurrent();
+					playerNames[1] = menu2.getCurrent();
+					loadScores();
+					state = State.GAME;
+				}
 				if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)){
 //					System.exit(0);
 					save();
@@ -134,9 +139,6 @@ public class Game_2Player {
 				break;
 			case GAME:
 				endGame = -1;
-				playerNames[0] = menu1.getCurrent();
-				playerNames[1] = menu2.getCurrent();
-				loadScores();
 				game();
 //				System.out.println(""+state);
 				break;
@@ -303,16 +305,15 @@ public class Game_2Player {
 			if(!options.contains(menu2.valueAt(i)))options.add(menu2.valueAt(i));
 		}
 		
-		
-		for (int i=0;i<options.size();i++){
+		for (int i=0;i<2;i++){
+			Properties save = new Properties();
 			try{
-				saveFile.setProperty("Account"+i,options.get(i));
-				saveFile.setProperty("WINS["+menu1.indexOf(playerNames[(i<2 ? i:0)])+"]", ""+playerScores[i*2]);
-				saveFile.setProperty("LOSSES["+menu1.indexOf(playerNames[(i<2 ? i:0)])+"]", ""+playerScores[(i*2)+1]);
 
-				File properties = new File("Accounts.master");
-				OutputStream save = new FileOutputStream( properties );
-				saveFile.store(save, "--HEADER--");
+				save.setProperty("LOSSES_"+i, ""+playerScores[(i*2)+1]);
+				save.setProperty("WINS_"+i, ""+playerScores[i*2]);
+				save.setProperty("Account"+i,playerNames[i]);
+
+				save.store(new FileOutputStream(new File(options.get(i)+".stats")), "--save--");
 			} catch (Exception e){
 				e.printStackTrace();
 			}
@@ -449,7 +450,7 @@ public class Game_2Player {
 	public void loadScores(){
 		for(int i=0;i<playerNames.length;i++){
 			try{
-				saveFile.load(new FileInputStream(new File(playerNames[i]+".accountInfo")));
+				saveFile.load(new FileInputStream(new File(playerNames[i]+".stats")));
 			
 			} catch(Exception e){file = null;}
 		
@@ -459,8 +460,8 @@ public class Game_2Player {
 				save();
 			} else {
 				for (int z=0;z<playerNames.length;z++){
-					playerScores[i*2] = new Integer(saveFile.getProperty("WINS["+i+"]"));
-					playerScores[(i*2)+1] = new Integer(saveFile.getProperty("LOSSES["+i+"]"));
+					playerScores[i*2] = new Integer(saveFile.getProperty("WINS_"+i));
+					playerScores[(i*2)+1] = new Integer(saveFile.getProperty("LOSSES_"+i));
 				}
 			}
 		}//for loop

@@ -22,38 +22,22 @@ public class Projectile {
 		this.shipNum = shipNum;
 	}
 	
-	public void setX(float x){
-		this.x = x;
-	}
-	public float getX(){
-		return x;
-	}
+	public void setX(float x){this.x = x;}
+	public float getX(){return x;}
 	
-	public double getDeltaX(){
-
-		return deltaX;
-	}
+	public void setY(float y){this.y = y;}	
+	public float getY(){return y;}
 	
+	public void setDeltaX(double newU){this.deltaX = newU;}
+	public double getDeltaX(){return deltaX;}
+	public void addToDeltaX(double newU){this.deltaX += newU;}
 	
-	public void setY(float y){
-		this.y = y;
-	}	
-	public float getY(){
-	
-		return y;
-	}
+	public void setDeltaY(double newV){this.deltaY = newV;}
+	public double getDeltaY(){return deltaY;}
+	public void addToDeltaY(double newV){this.deltaY += newV;}
 	
 
-	public double getDeltaY(){
-		return deltaY;
-	}
-	
-
-	public int getSpeed(){
-		return speed;
-	}
-	public int getShipNum(){
-		return this.shipNum;
-	}
+	public int getSpeed(){return speed;}
+	public int getShipNum(){return this.shipNum;}
 	
 }

@@ -4,27 +4,25 @@ import static org.lwjgl.opengl.GL11.GL_POLYGON;
 import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.glBegin;
-import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glEnd;
 import static org.lwjgl.opengl.GL11.glTexCoord2f;
 import static org.lwjgl.opengl.GL11.glVertex2i;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Random;
 
 import org.lwjgl.opengl.GL11;
 import org.newdawn.slick.TrueTypeFont;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
-import org.newdawn.slick.util.ResourceLoader;
 
 
 public class Draw {
 
+	public static Random rn = new Random();
 	
 	public static Texture texture;
 	
@@ -234,6 +232,161 @@ public class Draw {
 		GL11.glEnable(GL_BLEND);
 		f.drawString(leftX,topY,s,c);
 		
-	}
+	}//drawString method
+	
+	public static void drawProj(Projectile p){
+		p.setX((float)(p.getX()+p.getDeltaX()*p.getSpeed()));
+		p.setY((float)(p.getY()+p.getDeltaY()*p.getSpeed()));
+		
+		GL11.glPushMatrix();
+		GL11.glDisable(GL_BLEND);
+		GL11.glLoadIdentity();
+		
+		GL11.glColor3f(1, 1, 0);
+		GL11.glTranslated(p.getX(), p.getY(), 0);
+		
+		GL11.glBegin(GL11.GL_POLYGON);
+		GL11.glVertex2f(-10, 0);
+		GL11.glVertex2f(-5, 5);
+		GL11.glVertex2f(0, 10);
+		GL11.glVertex2f(5, 5);
+		GL11.glColor3f(0, 0, 0);
+		
+		GL11.glVertex2f(10, 0);
+		GL11.glVertex2f(5, -5);
+		GL11.glVertex2f(0, -10);
+		GL11.glVertex2f(-5, -5);
+		GL11.glEnd();
+		
+		GL11.glPopMatrix();
+		
+	}//drawProj method
+	public static void drawProj(Projectile p,float r,float g,float b){
+		p.setX((float)(p.getX()+p.getDeltaX()*p.getSpeed()));
+		p.setY((float)(p.getY()+p.getDeltaY()*p.getSpeed()));
+		
+		GL11.glPushMatrix();
+		GL11.glDisable(GL_BLEND);
+		GL11.glLoadIdentity();
+		
+		GL11.glColor3f(r, g, b);
+		GL11.glTranslated(p.getX(), p.getY(), 0);
+		
+		GL11.glBegin(GL11.GL_POLYGON);
+		GL11.glVertex2f(-10, 0);
+		GL11.glVertex2f(-5, 5);
+		GL11.glVertex2f(0, 10);
+		GL11.glVertex2f(5, 5);
+		GL11.glColor3f(0, 0, 0);
+		
+		GL11.glVertex2f(10, 0);
+		GL11.glVertex2f(5, -5);
+		GL11.glVertex2f(0, -10);
+		GL11.glVertex2f(-5, -5);
+		GL11.glEnd();
+		
+		GL11.glPopMatrix();
+		
+	}//drawProj method
+	public static void drawFighter(Fighter f){
+
+		f.setX((int)(f.getX()+f.getDX()*10));
+		f.setY((int)(f.getY()+f.getDY()*10));
+		
+		int hi = f.getHeight();
+		int MH = f.MAXHEALTH;
+		int hl = f.getHealth();
+		int newY = ((MH-hl)*hi)/MH;
+		
+		GL11.glPushMatrix();
+		GL11.glDisable(GL_BLEND);
+		GL11.glLoadIdentity();
+		
+		GL11.glTranslated(f.getX(), f.getY(), 0);
+		
+		GL11.glBegin(GL11.GL_QUADS);
+		GL11.glColor3f(1, 0, 0);
+			glVertex2i(0,0);
+			glVertex2i(f.getWidth(),0);
+			glVertex2i(f.getWidth(),hi);
+			glVertex2i(0,hi);
+		GL11.glEnd();
+		GL11.glBegin(GL_QUADS);
+			GL11.glColor3f(0, 1, 0);
+			glVertex2i(0,newY);
+			glVertex2i(f.getWidth(),newY);
+			glVertex2i(f.getWidth(),newY+hi-newY);
+			glVertex2i(0,newY+hi-newY);
+		GL11.glEnd();
+		
+		GL11.glPopMatrix();
+		
+//		System.out.printf("X: %s, Y: %s, Width: %s, Height: %s",f.getX(),f.getY(),f.getWidth(),f.getHeight());
+//		System.out.printf("hi: %s, MH: %s, hl: %s, newY: %s, newHi: %s\n",hi,MH,hl,newY,hi-newY);
+		
+	}//drawFighter method
+
+	public static void drawPowerup(Powerup p){
+
+		p.setX((int)(p.getX()+p.getDX()*5));
+		p.setY((int)(p.getY()+p.getDY()*5));
+		
+		int hi = 60;
+		int wi = 40;
+		Powerup.type t = p.getType();
+		
+		GL11.glPushMatrix();
+		GL11.glDisable(GL_BLEND);
+		GL11.glLoadIdentity();
+		
+		GL11.glTranslated(p.getX(), p.getY(), 0);
+		
+		if (t == Powerup.type.HEALTH){
+			GL11.glColor3f(0, 1, 1);
+		} else if (t == Powerup.type.LASER){
+			GL11.glColor3f(1, 0, 0);
+		} else if (t == Powerup.type.FIREWORK){
+			GL11.glColor3f(1, 0, 1);
+		} else if (t == Powerup.type.CLEAR){
+			GL11.glColor3f(1, 1, 1);
+		}
+		
+
+		GL11.glBegin(GL11.GL_QUADS);
+			glVertex2i(0,0);
+			glVertex2i(wi,0);
+			glVertex2i(wi,hi);
+			glVertex2i(0,hi);
+		GL11.glEnd();
+		
+		GL11.glPopMatrix();
+		
+	}//drawPowerup method
+	
+	public static void drawFirework(Firework f){
+		f.setX((int)(f.getX()+f.getDX()*f.getSpeed()));
+		f.setY((int)(f.getY()+f.getDY()*f.getSpeed()));
+		
+		int hi = 60;
+		int wi = 40;
+		
+		GL11.glPushMatrix();
+		GL11.glDisable(GL_BLEND);
+		GL11.glLoadIdentity();
+		
+		GL11.glTranslated(f.getX(), f.getY(), 0);
+		
+		GL11.glColor3f(0, 0.1f, 0.1f);
+
+		GL11.glBegin(GL11.GL_QUADS);
+			glVertex2i(0,0);
+			glVertex2i(wi,0);
+			glVertex2i(wi,hi);
+			glVertex2i(0,hi);
+		GL11.glEnd();
+		
+		GL11.glPopMatrix();
+
+	}//drawFirework method
 	
 }//Draw class

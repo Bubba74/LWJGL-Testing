@@ -188,7 +188,7 @@ public class Pong {
 			objects.add(new Obstacle(randX,randY));
 			objects.get(objects.size()-1).setWidth(20);
 			objects.get(objects.size()-1).setHeight(200);
-			objects.get(objects.size()-1).setColor(0,1,1);
+			objects.get(objects.size()-1).setColor(1,0,1);
 		}
 		if (randomGen.nextInt(2000)==0){
 			int size = objects.size();
@@ -303,7 +303,7 @@ public class Pong {
 				Draw.drawString(infoFont,"Player on the "+winSide+" wins!!!",WIDTH/2,HEIGHT/2,Color.pink);
 				Display.update();
 				Thread.sleep(1500);
-			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 				Draw.drawString(infoFont,"The game took roughly "+time+" seconds.",WIDTH/2,HEIGHT/2,Color.darkGray);
 				Display.update();
 				Thread.sleep(1500);

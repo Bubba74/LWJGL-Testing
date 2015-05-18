@@ -255,11 +255,13 @@ public class DropDownMenu {
 
 		while(Keyboard.next()){
 			if(Keyboard.getEventKeyState()){
-				newOption += Keyboard.getEventCharacter();
+				
 				if(Keyboard.getEventKey()==Keyboard.KEY_RETURN){
 					newText=false;
 					textOptions.add(newOption);
 					newOption = "";
+				} else {
+				newOption += Keyboard.getEventCharacter();
 				}
 				if(Keyboard.getEventKey()==Keyboard.KEY_ESCAPE)newOption="";
 			}

@@ -53,7 +53,6 @@ public class Main {
 		glMatrixMode(GL_MODELVIEW);
 		
 		
-		
 		while (!Display.isCloseRequested()){
 			/////ALL DISPLAY FUNCTIONS GO HERE///////////////
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
