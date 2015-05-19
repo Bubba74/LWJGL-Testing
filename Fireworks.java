@@ -28,8 +28,6 @@ public class Fireworks {
 	public void render(){
 		if (rn.nextInt(50)==0) newFirework();
 		
-		
-		
 		Firework removeRock = null;
 		for (Firework f:rockets){
 			if ((int)System.currentTimeMillis()-f.getTime()<=f.getDelay()){
@@ -74,9 +72,6 @@ public class Fireworks {
 		int x = rn.nextInt(WIDTH/2)+WIDTH/4;
 		int y = HEIGHT-50;
 		
-		
-		
-		
 		rockets.add(new Firework(x,y,dX,dY,speed,rn.nextInt(10),(int)System.currentTimeMillis(),rn.nextInt((20-speed)/4)*3000));
 	}//newFirework method
 	public void explode(int x, int y,int num,int power){
@@ -89,11 +84,8 @@ public class Fireworks {
 				if (fAngle >180){
 					fAngle -= 360;
 				}
-			
-				float ratioX = valueX((float)fAngle);
-				float ratioY = valueY((float)fAngle);
-				double evenX = ratioX/Math.hypot(ratioX,ratioY); 
-				double evenY = ratioY/Math.hypot(ratioX,ratioY);
+				double evenX = Utilities.circleValue((float)fAngle, true);
+				double evenY = Utilities.circleValue((float)fAngle, false);
 			
 				float sf = 1;
 				sparks.add(new Projectile(x,y,evenX*sf,evenY*sf,power,0));
@@ -105,13 +97,10 @@ public class Fireworks {
 				
 				if (fAngle >180){
 					fAngle -= 360;
-				}
-			
-				float ratioX = valueX((float)fAngle);
-				float ratioY = valueY((float)fAngle);
-				double evenX = ratioX/Math.hypot(ratioX,ratioY); 
-				double evenY = ratioY/Math.hypot(ratioX,ratioY);
-			
+				}	
+				double evenX = Utilities.circleValue((float)fAngle, true);
+				double evenY = Utilities.circleValue((float)fAngle, false);
+				
 				float sf = 1;
 				sf = rn.nextFloat();
 				
@@ -120,34 +109,6 @@ public class Fireworks {
 		
 		
 	}//firework method
-	public float valueX(float angle){
-		float angleX = angle;
-		float percent;
-		int mag = 1;
-		
-		if (angleX<0)angleX*=-1;
-		if (angleX>90){
-			angleX = (angleX - (2*(angleX-90)));
-			mag *= -1;
-		}
-		percent = (90-angleX)/90;
-		
-		return percent*mag;
-		
-	}//valueX method
-	public float valueY(float angle){
-		float angleY = angle;
-		if (angleY<-90){
-			angleY = angleY + (2*(-90-angleY));
-		}	
-		if (angleY>90){
-			angleY = angleY - (2*(angleY-90));
-		}
-		float percent = angleY/90;
-		
-		return percent;
-	}//valueY method
-	
 	
 	public void init(){
 		try {

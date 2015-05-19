@@ -71,7 +71,7 @@ public class BowMaster {
 		GL11.glDisable(GL11.GL_BLEND);
 		drawCastle();
 		
-		display.addOutput("'BowMaster'", 100000);
+//		display.addOutput("'BowMaster'", 100000);
 		
 		if(Mouse.getX() != x){
 			angle = Math.atan2((HEIGHT - Mouse.getY())-y,Mouse.getX()-x) * 18 * 3.14159;
@@ -90,7 +90,8 @@ public class BowMaster {
 			displayText += " Acc: "+(hits/shots);
 		}
 		displayText += " Health: "+(100*health/MAXHEALTH)+"%";
-		displayText += " Powerups: "+powerups.size();
+//		displayText += " Health: "+20;
+//		displayText += " Powerups: "+powerups.size();
 		
 		///////////////SHOOTING/////////////////////////
 		while(Mouse.next()){
@@ -119,7 +120,7 @@ public class BowMaster {
 			spawnFighter();
 //			System.out.println("ENEMY "+fighters.size()+" SPAWNED");
 		}
-		if (rn.nextInt(200)==0){
+		if (rn.nextInt(50)==0){
 			spawnPowerup();
 		}
 		
@@ -309,10 +310,9 @@ public class BowMaster {
 			if (fAngle >180){
 				fAngle -= 360;
 			}
-			float ratioX = valueX((float)fAngle);
-			float ratioY = valueY((float)fAngle);
-			double evenX = ratioX/Math.hypot(ratioX,ratioY); 
-			double evenY = ratioY/Math.hypot(ratioX,ratioY);
+			double evenX = Utilities.circleValue((float)angle,true);
+			double evenY = Utilities.circleValue((float)angle,false);
+
 			projs.add(new Projectile(x,y,evenX,evenY,speed,0));
 		}
 		
@@ -320,10 +320,9 @@ public class BowMaster {
 	}//firework method
 	
 	public void shoot(){
-		float ratioX = valueX((float)angle);
-		float ratioY = valueY((float)angle);
-		double evenX = ratioX/Math.hypot(ratioX,ratioY); 
-		double evenY = ratioY/Math.hypot(ratioX,ratioY);
+		double evenX = Utilities.circleValue((float)angle,true);
+		double evenY = Utilities.circleValue((float)angle,false);
+		
 		int mouseX = Mouse.getX();
 		int mouseY = HEIGHT-Mouse.getY();
 		int speed = (int)Math.hypot(mouseX-x, mouseY-y)/18;
@@ -333,33 +332,6 @@ public class BowMaster {
 		projs.add(new Projectile(x,y,evenX,evenY,speed,-1));
 		
 	}//shoot method
-	public float valueX(float angle){
-		float angleX = angle;
-		float percent;
-		int mag = 1;
-		
-		if (angleX<0)angleX*=-1;
-		if (angleX>90){
-			angleX = (angleX - (2*(angleX-90)));
-			mag *= -1;
-		}
-		percent = (90-angleX)/90;
-		
-		return percent*mag;
-		
-	}//valueX method
-	public float valueY(float angle){
-		float angleY = angle;
-		if (angleY<-90){
-			angleY = angleY + (2*(-90-angleY));
-		}	
-		if (angleY>90){
-			angleY = angleY - (2*(angleY-90));
-		}
-		float percent = angleY/90;
-		
-		return percent;
-	}//valueY method
 	
 	public void start(){
 		initGL();

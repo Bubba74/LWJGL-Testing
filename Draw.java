@@ -277,7 +277,7 @@ public class Draw {
 		GL11.glVertex2f(-5, 5);
 		GL11.glVertex2f(0, 10);
 		GL11.glVertex2f(5, 5);
-		GL11.glColor3f(0, 0, 0);
+//		GL11.glColor3f(0, 0, 0);
 		
 		GL11.glVertex2f(10, 0);
 		GL11.glVertex2f(5, -5);

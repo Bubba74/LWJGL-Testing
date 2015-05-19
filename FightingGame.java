@@ -302,7 +302,7 @@ public class FightingGame {
 					
 					}//for loop of ships
 					
-					if (removeProj == null)drawProj(p);
+					if (removeProj == null)Draw.drawProj(p);
 				
 				}//else statement
 			}//for loop of projectiles
@@ -352,19 +352,17 @@ public class FightingGame {
 	
 	
 	public void shoot(Projectile.projType type,int shipNum){
-		float ratioX = valueX(ships.get(shipNum).getRotateAngle());
-		float ratioY = valueY(ships.get(shipNum).getRotateAngle());
+		double evenX = Utilities.circleValue(ships.get(shipNum).getRotateAngle(), true);
+		double evenY = Utilities.circleValue(ships.get(shipNum).getRotateAngle(), false);
 		
 		switch (type){
 		case BULLET:
 			int bulletSpeed = 12;
-			float bulletX =(float) (ratioX/Math.hypot(ratioX,ratioY));
-			float bulletY = (float) (ratioY/Math.hypot(ratioX, ratioY));
-			projs.add(new Projectile(ships.get(shipNum).getX(),ships.get(shipNum).getY(),bulletX,bulletY,bulletSpeed,shipNum));
+			projs.add(new Projectile(ships.get(shipNum).getX(),ships.get(shipNum).getY(),evenX,evenY,bulletSpeed,shipNum));
 			break;
 		case BOMB:
 			int bombSpeed = 6;
-			float bombX = (float) (ratioX/Math.hypot(ratioX, ratioY))/4;
+			float bombX = (float) evenX/4;
 			float bombY = .8f;
 			projs.add(new Projectile(ships.get(shipNum).getX(),ships.get(shipNum).getY(),bombX,bombY,bombSpeed,shipNum));
 			break;
@@ -374,12 +372,14 @@ public class FightingGame {
 		
 	}//shoot method
 	public void drive(int mag,int shipNum){
-		float percentX = valueX(ships.get(shipNum).getRotateAngle());
-		float percentY = valueY(ships.get(shipNum).getRotateAngle());
-		float evenX = (float) (percentX/Math.hypot(percentX,percentY));
-		float evenY = (float) (percentY/Math.hypot(percentX, percentY));
-		ships.get(shipNum).addToX(evenX*mag);
-		ships.get(shipNum).addToY(evenY*mag);
+//		float percentX = valueX(ships.get(shipNum).getRotateAngle());
+//		float percentY = valueY(ships.get(shipNum).getRotateAngle());
+//		float evenX = (float) (percentX/Math.hypot(percentX,percentY));
+//		float evenY = (float) (percentY/Math.hypot(percentX, percentY));
+		double evenX = Utilities.circleValue(ships.get(shipNum).getRotateAngle(), true);
+		double evenY = Utilities.circleValue(ships.get(shipNum).getRotateAngle(), false);
+		ships.get(shipNum).addToX((float)evenX*mag);
+		ships.get(shipNum).addToY((float)evenY*mag);
 		
 //		System.out.println("EvenX: "+evenX + " EvenY: "+evenY);
 		
@@ -391,33 +391,6 @@ public class FightingGame {
 			Draw.drawString(font, ""+ships.get(i).getHealth(), (int)ships.get(i).getX(), (int)ships.get(i).getY(), Color.darkGray);
 		}
 	}//updateHealth method
-	public void drawProj(Projectile p){
-		p.setX((float)(p.getX()+p.getDeltaX()*p.getSpeed()));
-		p.setY((float)(p.getY()+p.getDeltaY()*p.getSpeed()));
-		
-		GL11.glPushMatrix();
-		GL11.glDisable(GL_BLEND);
-		GL11.glLoadIdentity();
-		
-		GL11.glColor3f(1, 1, 0);
-		GL11.glTranslated(p.getX(), p.getY(), 0);
-			
-		GL11.glBegin(GL11.GL_POLYGON);
-			GL11.glVertex2f(-10, 0);
-			GL11.glVertex2f(-5, 5);
-			GL11.glVertex2f(0, 10);
-			GL11.glVertex2f(5, 5);
-			GL11.glColor3f(0, 0, 0);
-		
-			GL11.glVertex2f(10, 0);
-			GL11.glVertex2f(5, -5);
-			GL11.glVertex2f(0, -10);
-			GL11.glVertex2f(-5, -5);
-		GL11.glEnd();
-		
-		GL11.glPopMatrix();
-		
-	}//drawProj method
 	public void drawShip(float r, float g, float b){
 		
 		GL11.glColor3f(r, g, b);
@@ -521,33 +494,6 @@ public class FightingGame {
 		
 	}//drawBox method
 
-	public float valueX(float angle){
-		float angleX = angle;
-		float percent;
-		int mag = 1;
-		
-		if (angleX<0)angleX*=-1;
-		if (angleX>90){
-			angleX = (angleX - (2*(angleX-90)));
-			mag *= -1;
-		}
-		percent = (90-angleX)/90;
-		
-		return percent*mag;
-		
-	}//valueX method
-	public float valueY(float angle){
-		float angleY = angle;
-		if (angleY<-90){
-			angleY = angleY + (2*(-90-angleY));
-		}	
-		if (angleY>90){
-			angleY = angleY - (2*(angleY-90));
-		}
-		float percent = angleY/90;
-		
-		return percent;
-	}//valueY method
 	public void initGL(){
 		try{
 			Display.setDisplayMode(new DisplayMode(WIDTH,HEIGHT));
