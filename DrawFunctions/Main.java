@@ -1,17 +1,13 @@
 package DrawFunctions;
 
-import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
-import static org.lwjgl.opengl.GL11.GL_PROJECTION;
-import static org.lwjgl.opengl.GL11.glLoadIdentity;
-import static org.lwjgl.opengl.GL11.glMatrixMode;
-import static org.lwjgl.opengl.GL11.glOrtho;
+import static org.lwjgl.opengl.GL11.*;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
-
+import Utilities.Draw;
 
 public class Main {
 	/*
@@ -56,12 +52,15 @@ public class Main {
 		while (!Display.isCloseRequested()){
 			/////ALL DISPLAY FUNCTIONS GO HERE///////////////
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-//			Draw.drawCircle(200, 200, 50);
 //			Draw.drawImage(200, 200, 200, "GingerbreadMan");
 			
 			/////^^^^^^^^^^^^^^^^^^^^^^^^^^^^^///////////////
-			
-			
+			Draw.drawCircle(400,250,40,"fill");
+			Draw.drawCircle(400, 250, 60, "fll");
+			Draw.drawCircle(400, 250, 80, "fll");
+			Draw.drawCircle(400, 250, 100, "fll");
+			Draw.drawCircle(400, 250, 120, "fll");
+			Draw.drawCircle(400, 250, 140, "fll");
 			
 			Display.update();
 			//Updates the display
