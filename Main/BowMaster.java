@@ -19,8 +19,8 @@ import org.newdawn.slick.TrueTypeFont;
 
 import Utilities.Draw;
 import Utilities.Functions;
+import Utilities.Notify;
 
-import DrawFunctions.Notify;
 
 
 public class BowMaster {

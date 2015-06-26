@@ -52,7 +52,7 @@ public class Pong {
 	public static double u=10000; //(+) = right
 	public static double v=000;//(+) = down
 	public static double d=0.001;//diminishes uv effect
-	public static double h=1.01;//u inc on hit
+	public static double h=1.05;//u inc on hit
 	
 	public static int leftX = 0;
 	public static int leftY = 50;

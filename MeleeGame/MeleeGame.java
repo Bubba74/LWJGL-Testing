@@ -17,7 +17,10 @@ import org.lwjgl.opengl.GL11;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
-import DrawFunctions.Notify;
+import Main.Entity;
+import Main.Projectile;
+import Utilities.Draw;
+import Utilities.Notify;
 
 public class MeleeGame {
 
@@ -47,11 +50,16 @@ public class MeleeGame {
 	private int damage = 4;
 	private int knockback = 30;
 	private int exp = 0;
+	private int slotNum = 0;
+	private String items[] = {"sword","gun"};
+	private String currentItem = "sword";
+	private List<Entity> arrows = new ArrayList<Entity>();
 	private boolean walking = false;
 	
 	private int hitTime = 0;
 	private boolean effect = false;
 	private Random rn = new Random();
+	
 	
 	public void render(){
 		glPushMatrix();
@@ -63,7 +71,8 @@ public class MeleeGame {
 			
 			mobs();
 			drawChar();
-			
+			displayArrows();
+
 		glPopMatrix();
 		
 		walking = false;
@@ -91,9 +100,32 @@ public class MeleeGame {
 		while(Keyboard.next()){
 			if (Keyboard.getEventKeyState()){
 				if (Keyboard.getEventKey() == Keyboard.KEY_N)spawnMob();
+				if (Keyboard.getEventKey() == Keyboard.KEY_RCONTROL) changeSlot(1);
+				if (Keyboard.getEventKey() == Keyboard.KEY_RMENU) changeSlot(-1);
 				if (Keyboard.getEventKey() == Keyboard.KEY_SPACE){
 					if (hitTime == 0){
-						hit();
+						if (currentItem.equals("sword")) hit(cameraX+WIDTH/2,cameraY+HEIGHT/2,100,true);
+					}
+					if (currentItem.equals("gun")){
+						float dX = 0;
+						float dY = 0;
+						if (direction == dir.UP){
+							dX = 0;
+							dY = -2;
+						} else if (direction == dir.DOWN){
+							dX = 0;
+							dY = 2;
+						} else if (direction == dir.RIGHT){
+							dX = 2;
+							dY = 0;
+						} else if (direction == dir.LEFT){
+							dX = -2;
+							dY = 0;
+						}
+						
+						arrows.add(new Entity(new Projectile(cameraX+WIDTH/2,cameraY+HEIGHT/2,dX,dY,4,-1)));
+						System.out.printf("X: %s, Y: %s, DX: %s, DY: %s\n",cameraX+WIDTH/2,cameraY+HEIGHT/2,dX,dY);
+						
 					}
 				}
 			}
@@ -102,8 +134,10 @@ public class MeleeGame {
 			spawnMob();
 		}
 		if (hitTime != 0){
-			swing();
+			if (currentItem.equals("sword"))swing();
 		}
+		if (currentItem.equals("gun"))checkArrows();
+		
 		output.addOutput("Exp: "+exp, 1);
 		output.display();
 //		output.clear();
@@ -170,20 +204,68 @@ public class MeleeGame {
 			}
 		}
 	}//swing method
-	public void hit(){
-		hitTime = (int)System.currentTimeMillis();
+	public boolean hit(int cX,int cY,int range, boolean enableSplash){
+		if (currentItem.equals("sword"))hitTime = (int)System.currentTimeMillis();
+		
+		boolean splash = true;
 		for (Mob m:mobs){
-			float dX = m.getX()-(cameraX+WIDTH/2);
-			float dY = m.getY()-(cameraY+HEIGHT/2);
-			if (Math.hypot(dX, dY)<100){
-				if ((dX<0 && direction == dir.LEFT) || (dX>0 && direction == dir.RIGHT) 
-					|| (dY<0 && direction == dir.UP) || (dY>0 && direction == dir.DOWN)){
-					m.hit(damage, cameraX, cameraY, knockback);
+			if(splash){
+				float dX = m.getX()-(cX);
+				float dY = m.getY()-(cY);
+				if (Math.hypot(dX, dY)<range){
+					if ((dX<0 && direction == dir.LEFT) || (dX>0 && direction == dir.RIGHT) 
+						|| (dY<0 && direction == dir.UP) || (dY>0 && direction == dir.DOWN)){
+						m.hit(damage, cameraX, cameraY, knockback);
+						if (!enableSplash){
+							splash = false;
+						}
+					}
 				}
 			}
 		}
+		return !splash;
 	}//hit method
+	public void checkArrows(){
+		List<Entity> dump = new ArrayList<Entity>();
+//		System.out.println("Checking Arrows...");
+		for (Entity e:arrows){
+			if (Math.hypot(e.getX()-(cameraX+WIDTH/2), e.getY()-(cameraY+HEIGHT/2))>900){
+				dump.add(e);
+//				System.out.println("Arrow dumped");
+			} else {
+				e.addToX(e.getDX()*e.getSpeed());
+				e.addToY(e.getDY()*e.getSpeed());
+				if (hit((int) e.getX(),(int)e.getY(),20,false))dump.add(e);
+				
+//				System.out.printf("DX: %s, DY: %s\n",e.getDX(),e.getDY());
+			}
+		}
+		for (Entity e:dump){
+			arrows.remove(e);
+		}
+		
+	}//checkArrows method
+	public void displayArrows(){
+		glColor3f(1,0,0);
+		for (Entity e:arrows){
+			int tX = (int) (e.getX()-(cameraX));
+			int tY = (int) (e.getY()-(cameraY));
+			glColor3f(1,0,0);
+			Draw.drawCircle(tX, tY, 3, "fill");
+		}
+		
+	}//displayArrows method
 	
+	public void changeSlot(int value){
+		if (value < 0){
+			if (slotNum >= 1) slotNum -= 1;
+		} else if (value > 0){
+			if (slotNum <= items.length-2) slotNum += 1;
+		}
+		currentItem = items[slotNum];
+	}//changeSlot
+	
+
 	public void spawnMob(){
 		mobs.add(new Mob(cameraX+rn.nextInt(WIDTH),cameraY+rn.nextInt(HEIGHT),Mob.mobType.ZOMBIE));
 	}//spawnMob method
@@ -245,25 +327,53 @@ public class MeleeGame {
 			glTexCoord2f(charValueX,charValueY+.25f);
 			glVertex2f(-15,42.5f);
 		glEnd();
-		System.out.println("X: "+charValueX + " Y: "+charValueY);
+//		System.out.println("X: "+charValueX + " Y: "+charValueY);
 //		character.release();
 		glDisable(GL_BLEND);
 		glDisable(GL_TEXTURE_2D);
 		displayHealth();
 
-		if (hitTime==0){//If you are NOT swinging
-		glRotatef(baseDegree,0,0,1);
-		glTranslatef(0,spacer,0);
+		if (currentItem.equals("sword") && hitTime==0){//If you are NOT swinging
+			glRotatef(baseDegree,0,0,1);
+			glTranslatef(0,spacer,0);
+				glBegin(GL_QUADS);
+					glColor3f(1,0,0);
+					glVertex2i(10,0);
+					glVertex2i(80,0);
+					glColor3f(0,1,0);
+					glVertex2i(20,5);
+					glVertex2i(10,5);
+				glEnd();
+		}
+		if (currentItem.equals("gun")){
+			int degree = 0;
+			if (direction == dir.UP){
+				degree = -90;
+			} else if (direction == dir.DOWN){
+				degree = 90;
+			} else if (direction == dir.RIGHT){
+				degree = 0;
+			} else if (direction == dir.LEFT){
+				degree = 180;
+			}
+			glRotatef(degree,0,0,1);
+			glColor3f(0,0,0);
 			glBegin(GL_QUADS);
-				glColor3f(1,0,0);
-				glVertex2i(10,0);
-				glVertex2i(80,0);
-				glColor3f(0,1,0);
-				glVertex2i(20,5);
-				glVertex2i(10,5);
+				glVertex2i(15,8);
+				glVertex2i(40,8);
+				glVertex2i(40,-8);
+				glVertex2i(15,-8);
+			glEnd();
+			
+			glColor3f(.3f,.3f,.3f);
+			glBegin(GL_QUADS);
+				glVertex2i(40,4);
+				glVertex2i(70,4);
+				glVertex2i(70,-4);
+				glVertex2i(40,-4);
 			glEnd();
 		}
-
+		
 		glPopMatrix();
 	}//drawChar method
 	public void displayHealth(){

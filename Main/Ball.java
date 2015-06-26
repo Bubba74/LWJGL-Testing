@@ -1,7 +1,7 @@
 package Main;
 import Utilities.Draw;
 import Utilities.Functions;
-import DrawFunctions.Notify;
+import Utilities.Notify;
 
 
 public class Ball {

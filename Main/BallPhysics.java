@@ -37,12 +37,7 @@ public class BallPhysics {
 				if (Keyboard.getEventKey() == Keyboard.KEY_SPACE) ball.isPaused= !ball.isPaused;
 				if (Keyboard.getEventKey() == Keyboard.KEY_R) ball.reset();
 				
-			} else {
-				
-				
 			}
-			
-			
 		}
 		
 		displayTerrain();

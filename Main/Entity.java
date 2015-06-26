@@ -9,8 +9,8 @@ public class Entity {
 	private specialType ability;
 	private int shipNum;
 	
-	private int x;
-	private int y;
+	private float x;
+	private float y;
 
 	private float dX;
 	private float dY;
@@ -31,7 +31,17 @@ public class Entity {
 	
 	
 	//////////////^^^^^^^^^^^^////////////////////
-	
+	public Entity(){
+		
+	}
+	public Entity (Projectile p){
+		x = (int) p.getX();
+		y = (int) p.getY();
+		dX = (float) p.getDeltaX();
+		dY = (float) p.getDeltaY();
+		shipNum = p.getShipNum();
+		speed = p.getSpeed();
+	}
 	public Projectile toProj(){
 		
 		return new Projectile(x,y,dX,dY,speed,shipNum);
@@ -43,13 +53,13 @@ public class Entity {
 	public void setShipNum(int shipNum){this.shipNum = shipNum;}
 	public int getShipNum(){return this.shipNum;}
 	
-	public void setX(int x){this.x = x;}
-	public int getX(){return x;}
-	public void addToX(int newX){this.x += newX;}
+	public void setX(float x){this.x = x;}
+	public float getX(){return x;}
+	public void addToX(float newX){this.x += newX;}
 
-	public void setY(int y){this.y = y;}	
-	public int getY(){return y;}
-	public void addToY(int newY){this.y += newY;}
+	public void setY(float y){this.y = y;}	
+	public float getY(){return y;}
+	public void addToY(float newY){this.y += newY;}
 	
 	public void setDX(float newU){this.dX = newU;}
 	public float getDX(){return dX;}

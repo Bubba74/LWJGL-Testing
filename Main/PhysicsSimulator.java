@@ -33,8 +33,8 @@ public class PhysicsSimulator {
 	public static int height = 100;
 	
 	
-	public static double u=2400; //(+) = right
-	public static double v=3000;//(-) = up
+	public static double u=9400; //(+) = right
+	public static double v=8000;//(-) = up
 	public static double d=0.001;
 	public static double g=10000;
 	public static double h=.97;
